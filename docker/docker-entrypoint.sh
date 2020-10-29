@@ -28,7 +28,7 @@ echo "Check composer";
 if [[ -f /var/www/composer.json && $COMPOSER_INSTALL -eq 1 ]]; then
     echo "Composer install";
     cd /var/www
-    composer install --prefer-dist --no-progress --no-suggest --no-interaction --optimize-autoloader
+    composer install --prefer-dist --no-progress --no-suggest --no-interaction && composer dump-autoload -o
 fi
 
 
