@@ -30,7 +30,7 @@ RUN set -ex; \
 
 # Composer 
 RUN set -ex; \     
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \     
+    curl -sS https://getcomposer.org/installer | php -- --version=1.10.16 --install-dir=/usr/local/bin --filename=composer; \     
     chmod +x /usr/local/bin/composer
 
 RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
