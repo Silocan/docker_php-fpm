@@ -3,7 +3,6 @@ LABEL maintainer="nicolas@unid-consulting.fr"
 
 
 RUN set -ex; \
-    \
     apt-get -yqq update; \
     apt-get -yqq install \
     libjpeg62-turbo-dev \
