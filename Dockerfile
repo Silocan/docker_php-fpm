@@ -1,32 +1,37 @@
-FROM php:7.1-fpm
+FROM php:7.1-alpine
 
 RUN set -ex; \
     \
-    apt-get -yqq update; \
-    apt-get -yqq install \
-    libjpeg62-turbo-dev \
+    apk update; \
+    apk add \
+    libjpeg-turbo-dev \
     libpng-dev \
-    libfreetype6-dev \
+    freetype-dev \
     libxml2-dev \
-    libicu-dev \
+    icu-dev \
     msmtp \
-    curl \
+    curl-dev \
     git \
     zip \
     unzip \
     vim \
     libxml2-dev \
-    libcurl3-dev \
-    mailutils \
-    libssl-dev \
-    pkg-config \
+    ssmtp \
+    openssl-dev \
+    pkgconfig \
     ; \
     rm -rf /var/lib/apt/lists/*; \
-    \    
+    \
     docker-php-ext-configure mysqli; \
     docker-php-ext-configure gd --with-freetype-dir=/usr/include --with-jpeg-dir=/usr/include; \
-    docker-php-ext-install intl opcache pdo pdo_mysql mbstring gd zip bcmath xml json mysqli curl calendar; \
-    pecl install mongodb && echo "extension=mongodb.so" >> $PHP_INI_DIR/conf.d/mongodb.ini
+    docker-php-ext-install intl opcache pdo pdo_mysql mbstring gd zip bcmath xml json mysqli curl calendar;
+
+# Install and configure MongoDB Ext
+RUN apk --update add --virtual build-dependencies build-base openssl-dev autoconf \
+  && pecl install mongodb \
+  && docker-php-ext-enable mongodb \
+  && apk del build-dependencies build-base openssl-dev autoconf \
+  && rm -rf /var/cache/apk/*
 
 # Composer 
 RUN set -ex; \     
