@@ -53,6 +53,6 @@ RUN chmod +x /entrypoint.sh
 
 WORKDIR /var/www
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["sh", "/entrypoint.sh"]
 
 CMD ["php-fpm", "-F"]
