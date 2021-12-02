@@ -20,12 +20,13 @@ RUN set -ex; \
     ssmtp \
     openssl-dev \
     pkgconfig \
+    ldb-dev libldap openldap-dev \
     ; \
     rm -rf /var/lib/apt/lists/*; \
     \
     docker-php-ext-configure mysqli; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
-    docker-php-ext-install intl opcache pdo pdo_mysql gd zip bcmath xml json mysqli curl calendar;
+    docker-php-ext-install intl opcache pdo pdo_mysql gd zip bcmath xml json mysqli curl calendar ldap;
 
 # Install and configure MongoDB Ext
 RUN apk --update add --virtual build-dependencies build-base openssl-dev autoconf \
