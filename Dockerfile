@@ -18,13 +18,12 @@ RUN set -ex; \
     openssl-dev \
     pkgconfig \
     gnu-libiconv \
-    ldb-dev libldap openldap-dev \
     ; \
     rm -rf /var/lib/apt/lists/*; \
     \
     docker-php-ext-configure mysqli; \
     docker-php-ext-configure gd --with-freetype-dir=/usr/include --with-jpeg-dir=/usr/include; \
-    docker-php-ext-install intl opcache pdo pdo_mysql mbstring gd zip bcmath xml json curl calendar iconv ldap;
+    docker-php-ext-install intl opcache pdo pdo_mysql mbstring gd zip bcmath xml json curl calendar iconv;
 
 # Installation apcu
 RUN apk add --update --no-cache --virtual .build-dependencies $PHPIZE_DEPS \
@@ -39,6 +38,17 @@ RUN apk --update add --virtual build-dependencies build-base openssl-dev autocon
   && docker-php-ext-enable mongodb \
   && apk del build-dependencies build-base openssl-dev autoconf \
   && rm -rf /var/cache/apk/*
+
+# Enable LDAP
+RUN apk add --update --no-cache \
+          libldap && \
+      # Build dependancy for ldap \
+      apk add --update --no-cache --virtual .docker-php-ldap-dependancies \
+          openldap-dev && \
+      docker-php-ext-configure ldap && \
+      docker-php-ext-install ldap && \
+      apk del .docker-php-ldap-dependancies && \
+      php -m; \
 
 # Composer 
 RUN set -ex; \     
