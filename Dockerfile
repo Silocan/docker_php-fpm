@@ -20,13 +20,12 @@ RUN set -ex; \
     ssmtp \
     openssl-dev \
     pkgconfig \
-    ldb-dev libldap openldap-dev \
     ; \
     rm -rf /var/lib/apt/lists/*; \
     \
     docker-php-ext-configure mysqli; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
-    docker-php-ext-install intl opcache pdo pdo_mysql gd zip bcmath xml json mysqli curl calendar ldap;
+    docker-php-ext-install intl opcache pdo pdo_mysql gd zip bcmath xml json mysqli curl calendar;
 
 # Install and configure MongoDB Ext
 RUN apk --update add --virtual build-dependencies build-base openssl-dev autoconf \
@@ -34,6 +33,17 @@ RUN apk --update add --virtual build-dependencies build-base openssl-dev autocon
   && docker-php-ext-enable mongodb \
   && apk del build-dependencies build-base openssl-dev autoconf \
   && rm -rf /var/cache/apk/*
+
+# Enable LDAP
+RUN apk add --update --no-cache \
+          libldap && \
+      # Build dependancy for ldap \
+      apk add --update --no-cache --virtual .docker-php-ldap-dependancies \
+          openldap-dev && \
+      docker-php-ext-configure ldap && \
+      docker-php-ext-install ldap && \
+      apk del .docker-php-ldap-dependancies && \
+      php -m; \
 
 # Composer 
 RUN set -ex; \     
