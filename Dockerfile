@@ -14,17 +14,24 @@ RUN set -ex; \
     git \
     zip \
     unzip \
-    vim \
     libxml2-dev \
-    ssmtp \
     openssl-dev \
     pkgconfig \
+    gnu-libiconv \
+    ldb-dev libldap openldap-dev \
     ; \
     rm -rf /var/lib/apt/lists/*; \
     \
     docker-php-ext-configure mysqli; \
     docker-php-ext-configure gd --with-freetype-dir=/usr/include --with-jpeg-dir=/usr/include; \
-    docker-php-ext-install intl opcache pdo pdo_mysql mbstring gd zip bcmath xml json mysqli curl calendar;
+    docker-php-ext-install intl opcache pdo pdo_mysql mbstring gd zip bcmath xml json curl calendar iconv ldap;
+
+# Installation apcu
+RUN apk add --update --no-cache --virtual .build-dependencies $PHPIZE_DEPS \
+        && pecl install apcu \
+        && docker-php-ext-enable apcu \
+        && pecl clear-cache \
+        && apk del .build-dependencies
 
 # Install and configure MongoDB Ext
 RUN apk --update add --virtual build-dependencies build-base openssl-dev autoconf \
