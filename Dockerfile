@@ -27,6 +27,10 @@ RUN set -ex; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
     docker-php-ext-install intl opcache pdo pdo_mysql gd zip bcmath xml json mysqli curl calendar;
 
+# fix work iconv library with alphine
+RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.12/community/ gnu-libiconv=1.15-r2
+ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
+
 # Install and configure MongoDB Ext
 RUN apk --update add --virtual build-dependencies build-base openssl-dev autoconf \
   && pecl install mongodb \
