@@ -33,6 +33,17 @@ RUN apk --update add --virtual build-dependencies build-base openssl-dev autocon
   && apk del build-dependencies build-base openssl-dev autoconf \
   && rm -rf /var/cache/apk/*
 
+# Enable LDAP
+RUN apk add --update --no-cache \
+          libldap && \
+      # Build dependancy for ldap \
+      apk add --update --no-cache --virtual .docker-php-ldap-dependancies \
+          openldap-dev && \
+      docker-php-ext-configure ldap && \
+      docker-php-ext-install ldap && \
+      apk del .docker-php-ldap-dependancies && \
+      php -m; \
+
 # Composer 
 RUN set -ex; \     
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \     
