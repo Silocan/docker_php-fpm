@@ -1,4 +1,4 @@
-FROM php:7.2-fpm-alpine
+FROM php:7.3-fpm-alpine
 
 RUN set -ex; \
     \
@@ -17,7 +17,9 @@ RUN set -ex; \
     libxml2-dev \
     openssl-dev \
     pkgconfig \
-    gnu-libiconv \
+    gnu-libiconv \ 
+    zlib-dev \
+    libzip-dev \
     ; \
     rm -rf /var/lib/apt/lists/*; \
     \
@@ -66,6 +68,10 @@ RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
 COPY docker/msmtp/msmtprc /etc/msmtprc
 COPY docker/docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+#
+# PHP - Problème de commande dans l'entrypoint
+RUN echo "date.timezone = \"${LOCALTIME}\"" >> $PHP_INI_DIR/conf.d/00-default.ini
 
 WORKDIR /var/www
 
