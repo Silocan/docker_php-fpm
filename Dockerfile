@@ -25,7 +25,8 @@ RUN set -ex; \
     \
     docker-php-ext-configure mysqli; \
     docker-php-ext-configure gd --with-freetype-dir=/usr/include --with-jpeg-dir=/usr/include; \
-    docker-php-ext-install intl opcache pdo pdo_mysql mbstring gd zip bcmath xml json curl calendar iconv;
+    docker-php-ext-install intl opcache pdo pdo_mysql mbstring gd zip bcmath xml json curl calendar iconv; \
+    touch $PHP_INI_DIR/conf.d/php-ini-overrides.ini;
 
 # Installation apcu
 RUN apk add --update --no-cache --virtual .build-dependencies $PHPIZE_DEPS \
@@ -68,10 +69,6 @@ RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
 COPY docker/msmtp/msmtprc /etc/msmtprc
 COPY docker/docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-
-#
-# PHP - Problème de commande dans l'entrypoint
-RUN echo "date.timezone = \"${LOCALTIME}\"" >> $PHP_INI_DIR/conf.d/00-default.ini
 
 WORKDIR /var/www
 

@@ -18,10 +18,8 @@ function set_conf {
 
 #
 # PHP
-#echo "date.timezone = \"${LOCALTIME}\"" >> $PHP_INI_DIR/conf.d/00-default.ini
-set_conf "PHP__" "$PHP_INI_DIR/conf.d/40-user.ini" "="
-
-chmod 777 -Rf /var/www
+echo "date.timezone = \"${LOCALTIME}\"" >> $PHP_INI_DIR/conf.d/php-ini-overrides.ini
+set_conf "PHP__" "$PHP_INI_DIR/conf.d/php-ini-overrides.ini" "="
 
 echo "Check composer";
 if [[ -f /var/www/composer.json && $COMPOSER_INSTALL -eq 1 ]]; then
