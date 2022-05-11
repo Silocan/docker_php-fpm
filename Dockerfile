@@ -1,4 +1,4 @@
-FROM php:7.4-fpm-alpine
+FROM php:8.1-fpm-alpine
 
 RUN set -ex; \
     \
@@ -25,7 +25,7 @@ RUN set -ex; \
     \
     docker-php-ext-configure mysqli; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
-    docker-php-ext-install intl opcache pdo pdo_mysql gd zip bcmath xml json mysqli curl calendar;
+    docker-php-ext-install intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql;
 
 # Install and configure MongoDB Ext
 RUN apk --update add --virtual build-dependencies build-base openssl-dev autoconf \
