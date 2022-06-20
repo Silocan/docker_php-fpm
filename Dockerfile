@@ -44,7 +44,7 @@ RUN apk add --update --no-cache \
           libldap && \
       # Build dependancy for ldap \
       apk add --update --no-cache --virtual .docker-php-ldap-dependancies \
-          openldap-dev && \
+          openldap-dev openssh-client && \
       docker-php-ext-configure ldap && \
       docker-php-ext-install ldap && \
       apk del .docker-php-ldap-dependancies && \
@@ -52,15 +52,16 @@ RUN apk add --update --no-cache \
 
 # Composer 
 RUN set -ex; \     
-    curl -sS https://getcomposer.org/installer | php -- --version=1.10.16 --install-dir=/usr/local/bin --filename=composer; \     
+    curl -sS https://getcomposer.org/installer | php -- --version=2.3.7 --install-dir=/usr/local/bin --filename=composer; \     
     chmod +x /usr/local/bin/composer
 
 RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
-    && curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/linux/amd64/$version \
+    && architecture=$(uname -m) \
+    && curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/alpine/$architecture/$version \
     && mkdir -p /tmp/blackfire \
     && tar zxpf /tmp/blackfire-probe.tar.gz -C /tmp/blackfire \
-    && mv /tmp/blackfire/blackfire-*.so $(php -r "echo ini_get('extension_dir');")/blackfire.so \
-    && printf "extension=blackfire.so\nblackfire.agent_socket=tcp://blackfire:8707\n" > $PHP_INI_DIR/conf.d/blackfire.ini \
+    && mv /tmp/blackfire/blackfire-*.so $(php -r "echo ini_get ('extension_dir');")/blackfire.so \
+    && printf "extension=blackfire.so\nblackfire.agent_socket=tcp://blackfire:8307\n" > $PHP_INI_DIR/conf.d/blackfire.ini \
     && rm -rf /tmp/blackfire /tmp/blackfire-probe.tar.gz
 
 COPY docker/msmtp/msmtprc /etc/msmtprc
