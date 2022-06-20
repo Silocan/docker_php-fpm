@@ -38,6 +38,12 @@ RUN apk --update add --virtual build-dependencies build-base openssl-dev autocon
   && docker-php-ext-enable mongodb \
   && apk del build-dependencies build-base openssl-dev autoconf \
   && rm -rf /var/cache/apk/*
+  
+# Install and configure Redis Ext
+RUN apk --update add --virtual build-dependencies build-base openssl-dev autoconf \
+    && pecl install -o -f redis \
+    &&  rm -rf /tmp/pear \
+    &&  docker-php-ext-enable redis
 
 # Enable LDAP
 RUN apk add --update --no-cache \
