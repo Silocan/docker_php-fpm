@@ -20,6 +20,7 @@ RUN set -ex; \
     ssmtp \
     openssl-dev \
     pkgconfig \
+    openssh-client \
     ; \
     rm -rf /var/lib/apt/lists/*; \
     \
