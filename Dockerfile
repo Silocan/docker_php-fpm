@@ -50,10 +50,14 @@ RUN apk add --update --no-cache \
       apk del .docker-php-ldap-dependancies && \
       php -m; \
 
-# Composer 
-RUN set -ex; \     
-    curl -sS https://getcomposer.org/installer | php -- --version=2.3.7 --install-dir=/usr/local/bin --filename=composer; \     
+# Composer v1.x
+RUN set -ex; \
+    curl -sS https://getcomposer.org/installer | php -- --version=1.10.26 --install-dir=/usr/local/bin --filename=composer; \     
     chmod +x /usr/local/bin/composer
+# Composer v2.x
+RUN set -ex; \  
+    curl -sS https://getcomposer.org/installer | php -- --version=2.3.7 --install-dir=/usr/local/bin --filename=composer2; \     
+    chmod +x /usr/local/bin/composer2
 
 RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
     && architecture=$(uname -m) \
