@@ -30,7 +30,7 @@ RUN set -ex; \
 
 # Install and configure MongoDB Ext
 RUN apk --update add --virtual build-dependencies build-base openssl-dev autoconf \
-  && pecl install mongodb \
+  && pecl install mongodb-1.15.1 \
   && docker-php-ext-enable mongodb \
   && apk del build-dependencies build-base openssl-dev autoconf \
   && rm -rf /var/cache/apk/*
