@@ -21,12 +21,14 @@ RUN set -ex; \
     openssl-dev \
     pkgconfig \
     openssh-client \
+    imagemagick-dev \
+    imap-dev \
     ; \
     rm -rf /var/lib/apt/lists/*; \
     \
     docker-php-ext-configure mysqli; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
-    docker-php-ext-install intl opcache pdo pdo_mysql gd zip bcmath xml json mysqli curl calendar;
+    docker-php-ext-install intl opcache pdo pdo_mysql gd zip bcmath xml json mysqli curl calendar sockets imap;
 
 # fix work iconv library with alphine
 RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.12/community/ gnu-libiconv=1.15-r2
@@ -54,7 +56,13 @@ RUN apk add --update --no-cache \
       docker-php-ext-configure ldap && \
       docker-php-ext-install ldap && \
       apk del .docker-php-ldap-dependancies && \
-      php -m; \
+      php -m;
+
+# Install and configure Imagick
+RUN apk add --update --no-cache autoconf g++ imagemagick-dev libtool make pcre-dev \
+    && pecl install imagick \
+    && docker-php-ext-enable imagick \
+    && apk del autoconf g++ libtool make pcre-dev
 
 # Composer 
 RUN set -ex; \     
