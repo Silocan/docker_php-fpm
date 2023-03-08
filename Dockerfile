@@ -18,12 +18,14 @@ RUN set -ex; \
     openssl-dev \
     pkgconfig \
     gnu-libiconv \
+    imap-dev \
+    openssh-client \
     ; \
     rm -rf /var/lib/apt/lists/*; \
     \
     docker-php-ext-configure mysqli; \
     docker-php-ext-configure gd --with-freetype-dir=/usr/include --with-jpeg-dir=/usr/include; \
-    docker-php-ext-install intl opcache pdo pdo_mysql mbstring gd zip bcmath xml json curl calendar iconv;
+    docker-php-ext-install intl opcache pdo pdo_mysql mbstring gd zip bcmath xml json curl calendar iconv sockets imap;
 
 # Installation apcu
 RUN apk add --update --no-cache --virtual .build-dependencies $PHPIZE_DEPS \
@@ -39,16 +41,29 @@ RUN apk --update add --virtual build-dependencies build-base openssl-dev autocon
   && apk del build-dependencies build-base openssl-dev autoconf \
   && rm -rf /var/cache/apk/*
 
+
+# Install and configure Redis Ext
+RUN apk --update add --virtual build-dependencies build-base openssl-dev autoconf \
+    && pecl install -o -f redis \
+    &&  rm -rf /tmp/pear \
+    &&  docker-php-ext-enable redis
+
 # Enable LDAP
-RUN apk add --update --no-cache \
-          libldap && \
-      # Build dependancy for ldap \
-      apk add --update --no-cache --virtual .docker-php-ldap-dependancies \
-          openldap-dev openssh-client && \
-      docker-php-ext-configure ldap && \
-      docker-php-ext-install ldap && \
-      apk del .docker-php-ldap-dependancies && \
-      php -m; \
+#RUN apk add --update --no-cache \
+#            libldap && \
+#        # Build dependancy for ldap \
+#        apk add --update --no-cache --virtual .docker-php-ldap-dependancies \
+#            openldap-dev && \
+#        docker-php-ext-configure ldap && \
+#        docker-php-ext-install ldap && \
+#        apk del .docker-php-ldap-dependancies && \
+#        php -m; \
+
+# Install and configure Imagick
+RUN apk add --update --no-cache autoconf g++ imagemagick-dev libtool make pcre-dev \
+    && pecl install imagick \
+    && docker-php-ext-enable imagick \
+    && apk del autoconf g++ libtool make pcre-dev
 
 # Composer v1.x
 RUN set -ex; \
