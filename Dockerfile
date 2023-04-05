@@ -1,3 +1,5 @@
+FROM curlimages/curl:7.83.1
+
 FROM php:7.4-fpm-alpine
 
 RUN set -ex; \
@@ -19,6 +21,9 @@ RUN set -ex; \
     libxml2-dev \
     ssmtp \
     openssl-dev \
+    libssh2 \
+    libssh2-dev \
+    libssh2-dev \
     pkgconfig \
     openssh-client \
     imagemagick-dev \
@@ -85,6 +90,12 @@ RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
 COPY docker/msmtp/msmtprc /etc/msmtprc
 COPY docker/docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+COPY --from=0 /usr/bin/curl /usr/bin/curl
+COPY --from=0 /usr/include/curl /usr/include/curl
+COPY --from=0 /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4.8.0
+RUN ln -sf /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4
+RUN ln -sf /usr/lib/libcurl.so.4 /usr/lib/libcurl.so
 
 WORKDIR /var/www
 
