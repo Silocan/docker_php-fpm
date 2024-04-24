@@ -21,6 +21,7 @@ RUN set -ex; \
     openssl-dev \
     pkgconfig \
     openssh-client \
+    gcc make g++ zlib-dev autoconf linux-headers \
     ; \
     rm -rf /var/lib/apt/lists/*; \
     \
@@ -44,12 +45,19 @@ RUN apk add --update --no-cache \
       docker-php-ext-configure ldap && \
       docker-php-ext-install ldap && \
       apk del .docker-php-ldap-dependancies && \
-      php -m; \
+      php -m;
 
 # Composer 
 RUN set -ex; \     
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \     
     chmod +x /usr/local/bin/composer
+
+# XDebug
+RUN apk add --no-cache ${PHPIZE_DEPS} && \
+    pecl install xdebug && \
+    docker-php-ext-enable xdebug \
+    && echo "xdebug.mode=debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.client_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 # Probe blackfire
 RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
