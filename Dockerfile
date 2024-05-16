@@ -42,6 +42,15 @@ RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
     && printf "extension=blackfire.so\nblackfire.agent_socket=tcp://blackfire:8707\n" > $PHP_INI_DIR/conf.d/blackfire.ini \
     && rm -rf /tmp/blackfire /tmp/blackfire-probe.tar.gz
 
+# Soap
+RUN docker-php-ext-install soap;
+
+# XDebug
+RUN  pecl install xdebug-3.1.5 && \
+docker-php-ext-enable xdebug \
+&& echo "xdebug.mode=debug" >> $PHP_INI_DIR/conf.d/docker-php-ext-xdebug.ini \
+&& echo "xdebug.client_host=host.docker.internal" >> $PHP_INI_DIR/conf.d/docker-php-ext-xdebug.ini
+
 COPY docker/msmtp/msmtprc /etc/msmtprc
 COPY docker/docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
