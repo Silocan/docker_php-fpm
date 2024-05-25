@@ -9,6 +9,7 @@ RUN apt update; \
     ssmtp \
     curl \
     openssh-client \
+    bash \
     ; \
     rm -rf /var/lib/apt/lists/*;
 
@@ -17,8 +18,12 @@ RUN curl -sSLf \
     https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
     chmod +x /usr/local/bin/install-php-extensions
 
-RUN install-php-extensions xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql redis mongodb-1.15.1 ldap soap;
 
+COPY --link docker/msmtp/msmtprc /etc/msmtprc
+COPY --link docker/docker-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+WORKDIR /var/www
 
 # Composer 
 RUN set -ex; \     
@@ -42,11 +47,7 @@ RUN mkdir -p /tmp/blackfire \
     && mv /tmp/blackfire/blackfire /usr/bin/blackfire \
     && rm -Rf /tmp/blackfire
 
-COPY --link docker/msmtp/msmtprc /etc/msmtprc
-COPY --link docker/docker-entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-WORKDIR /var/www
+RUN install-php-extensions xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql redis mongodb-1.15.1 ldap soap;
 
 ENTRYPOINT ["sh", "/entrypoint.sh"]
 
