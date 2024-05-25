@@ -1,50 +1,24 @@
-FROM php:8.2-fpm-alpine
+FROM php:8.2-fpm
 
-RUN set -ex; \
-    \
-    apk update; \
-    apk add \
-    libjpeg-turbo-dev \
-    libpng-dev \
-    freetype-dev \
-    libxml2-dev \
-    icu-dev \
-    msmtp \
-    curl-dev \
+RUN apt update; \
+    apt install \
     git \
     zip \
     unzip \
-    libzip-dev \
     vim \
-    libxml2-dev \
     ssmtp \
-    openssl-dev \
-    pkgconfig \
+    curl \
     openssh-client \
     ; \
-    rm -rf /var/lib/apt/lists/*; \
-    \
-    docker-php-ext-configure mysqli; \
-    docker-php-ext-configure gd --with-freetype --with-jpeg; \
-    docker-php-ext-install intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql;
+    rm -rf /var/lib/apt/lists/*;
 
-# Install and configure MongoDB Ext
-RUN apk --update add --virtual build-dependencies build-base openssl-dev autoconf \
-  && pecl install mongodb-1.15.1 \
-  && docker-php-ext-enable mongodb \
-  && apk del build-dependencies build-base openssl-dev autoconf \
-  && rm -rf /var/cache/apk/*
+RUN curl -sSLf \
+    -o /usr/local/bin/install-php-extensions \
+    https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
+    chmod +x /usr/local/bin/install-php-extensions
 
-# Enable LDAP
-RUN apk add --update --no-cache \
-          libldap && \
-      # Build dependancy for ldap \
-      apk add --update --no-cache --virtual .docker-php-ldap-dependancies \
-          openldap-dev && \
-      docker-php-ext-configure ldap && \
-      docker-php-ext-install ldap && \
-      apk del .docker-php-ldap-dependancies && \
-      php -m; \
+RUN install-php-extensions xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql redis mongodb-1.15.1 ldap soap;
+
 
 # Composer 
 RUN set -ex; \     
@@ -68,8 +42,8 @@ RUN mkdir -p /tmp/blackfire \
     && mv /tmp/blackfire/blackfire /usr/bin/blackfire \
     && rm -Rf /tmp/blackfire
 
-COPY docker/msmtp/msmtprc /etc/msmtprc
-COPY docker/docker-entrypoint.sh /entrypoint.sh
+COPY --link docker/msmtp/msmtprc /etc/msmtprc
+COPY --link docker/docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 WORKDIR /var/www
