@@ -49,6 +49,8 @@ RUN mkdir -p /tmp/blackfire \
 
 RUN install-php-extensions xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql redis mongodb-1.15.1 ldap soap;
 
-ENTRYPOINT ["sh", "/entrypoint.sh"]
+COPY --link docker/www.conf /usr/local/etc/php-fpm.d/www.conf
+
+ENTRYPOINT ["bash", "/entrypoint.sh"]
 
 CMD ["php-fpm", "-F"]
