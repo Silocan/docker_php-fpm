@@ -10,6 +10,8 @@ RUN apt update; \
     curl \
     openssh-client \
     bash \
+    cron \
+    nano \
     ; \
     rm -rf /var/lib/apt/lists/*;
 
