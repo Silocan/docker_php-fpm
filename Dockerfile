@@ -1,7 +1,7 @@
 FROM php:8.2-fpm
 
 RUN apt update; \
-    apt install \
+    apt install -y \
     git \
     zip \
     unzip \

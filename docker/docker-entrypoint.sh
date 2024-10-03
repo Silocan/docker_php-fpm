@@ -54,4 +54,7 @@ if [[ -f /var/www/bin/console && -f /var/www/.env && $DOCTRINE_LOAD -eq 1 ]]; th
     #php bin/console doctrine:fixtures:load --append
 fi
 
+touch /var/log/cron.log
+service cron start
+
 exec "$@"
