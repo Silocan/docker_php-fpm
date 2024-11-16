@@ -20,6 +20,8 @@ RUN set -ex; \
     gnu-libiconv \
     imap-dev \
     openssh-client \
+    openjdk9 \
+    python2 \
     ; \
     rm -rf /var/lib/apt/lists/*;
 
