@@ -1,29 +1,28 @@
 FROM php:7.2-fpm
 
+RUN apt update && apt search openjdk
+
 RUN set -ex; \
     \
     apt update; \
-    apt install \
-    libjpeg-turbo-dev \
+    apt install -y \
     libpng-dev \
-    freetype-dev \
     libxml2-dev \
-    icu-dev \
     msmtp \
-    curl-dev \
     git \
     zip \
     unzip \
     libxml2-dev \
-    openssl-dev \
-    pkgconfig \
-    gnu-libiconv \
-    imap-dev \
     openssh-client \
-    openjdk9 \
     python2 \
+    wget \
     ; \
     rm -rf /var/lib/apt/lists/*;
+
+# Java
+RUN mkdir -p /usr/share/man/man1 && apt-get update && \
+    apt-get install -y openjdk-11-jdk && \
+    apt clean;
 
 # PdfTk
 RUN wget https://gitlab.com/api/v4/projects/5024297/packages/generic/pdftk-java/v3.3.3/pdftk-all.jar; \
