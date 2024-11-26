@@ -4,13 +4,8 @@ RUN set -ex; \
     \
     apk update; \
     apk add \
-    libjpeg-turbo-dev \
-    libpng-dev \
-    freetype-dev \
-    libxml2-dev \
     icu-dev \
     msmtp \
-    curl-dev \
     git \
     zip \
     unzip \
@@ -23,58 +18,20 @@ RUN set -ex; \
     openssh-client \
     gcc make g++ zlib-dev autoconf linux-headers \
     ; \
-    rm -rf /var/lib/apt/lists/*; \
-    \
-    docker-php-ext-configure mysqli; \
-    docker-php-ext-configure gd --with-freetype --with-jpeg; \
-    docker-php-ext-install intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql;
-
-# Install and configure MongoDB Ext
-RUN apk --update add --virtual build-dependencies build-base openssl-dev autoconf \
-  && pecl install mongodb-1.15.1 \
-  && docker-php-ext-enable mongodb \
-  && apk del build-dependencies build-base openssl-dev autoconf \
-  && rm -rf /var/cache/apk/*
-
-# Enable LDAP
-RUN apk add --update --no-cache \
-          libldap && \
-      # Build dependancy for ldap \
-      apk add --update --no-cache --virtual .docker-php-ldap-dependancies \
-          openldap-dev && \
-      docker-php-ext-configure ldap && \
-      docker-php-ext-install ldap && \
-      apk del .docker-php-ldap-dependancies && \
-      php -m;
+    rm -rf /var/lib/apt/lists/*;
 
 # Composer 
 RUN set -ex; \     
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \     
     chmod +x /usr/local/bin/composer
 
-# XDebug
-RUN apk add --no-cache ${PHPIZE_DEPS} && \
-    pecl install xdebug && \
-    docker-php-ext-enable xdebug \
-    && echo "xdebug.mode=debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.client_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
-# Probe blackfire
-RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
-    && architecture=$(uname -m) \
-    && curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/alpine/$architecture/$version \
-    && mkdir -p /tmp/blackfire \
-    && tar zxpf /tmp/blackfire-probe.tar.gz -C /tmp/blackfire \
-    && mv /tmp/blackfire/blackfire-*.so $(php -r "echo ini_get ('extension_dir');")/blackfire.so \
-    && printf "extension=blackfire.so\nblackfire.agent_socket=tcp://blackfire:8307\n" > $PHP_INI_DIR/conf.d/blackfire.ini \
-    && rm -rf /tmp/blackfire /tmp/blackfire-probe.tar.gz
+RUN curl -sSLf \
+    -o /usr/local/bin/install-php-extensions \
+    https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
+    chmod +x /usr/local/bin/install-php-extensions
 
-# Client blackfire
-RUN mkdir -p /tmp/blackfire \
-    && architecture=$(uname -m) \
-    && curl -A "Docker" -L https://blackfire.io/api/v1/releases/cli/linux/$architecture | tar zxp -C /tmp/blackfire \
-    && mv /tmp/blackfire/blackfire /usr/bin/blackfire \
-    && rm -Rf /tmp/blackfire
+RUN install-php-extensions ldap xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql redis mongodb-1.15.1 ldap soap;
 
 COPY docker/msmtp/msmtprc /etc/msmtprc
 COPY docker/docker-entrypoint.sh /entrypoint.sh
