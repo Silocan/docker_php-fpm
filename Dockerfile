@@ -1,3 +1,6 @@
+#FROM curlimages/curl:7.83.1
+FROM curlimages/curl:latest
+
 FROM php:8.2-fpm-alpine
 
 RUN set -ex; \
@@ -16,6 +19,8 @@ RUN set -ex; \
     openssl-dev \
     pkgconfig \
     openssh-client \
+    libssh2 \
+    libssh2-dev \
     gcc make g++ zlib-dev autoconf linux-headers \
     ; \
     rm -rf /var/lib/apt/lists/*;
@@ -36,6 +41,13 @@ RUN install-php-extensions ldap xdebug intl opcache pdo gd zip bcmath xml mysqli
 COPY docker/msmtp/msmtprc /etc/msmtprc
 COPY docker/docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+# Copy curl
+COPY --from=0 /usr/bin/curl /usr/bin/curl
+COPY --from=0 /usr/include/curl /usr/include/curl
+COPY --from=0 /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4.8.0
+RUN ln -sf /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4
+RUN ln -sf /usr/lib/libcurl.so.4 /usr/lib/libcurl.so
 
 WORKDIR /var/www
 
