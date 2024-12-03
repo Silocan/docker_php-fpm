@@ -30,9 +30,7 @@ RUN set -ex; \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \     
     chmod +x /usr/local/bin/composer
 
-# modules not yet compatible with php8.4
-# xdebug
-RUN install-php-extensions intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql redis mongodb-1.15.1 ldap soap;
+RUN install-php-extensions xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql redis mongodb-1.15.1 ldap soap;
 
 COPY --link docker/www.conf /usr/local/etc/php-fpm.d/www.conf
 
