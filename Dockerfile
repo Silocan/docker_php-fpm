@@ -1,7 +1,7 @@
 #FROM curlimages/curl:7.83.1
 FROM curlimages/curl:latest
 
-FROM php:8.2-fpm-alpine
+FROM php:8.4-fpm-alpine
 
 RUN set -ex; \
     \
