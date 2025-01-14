@@ -7,7 +7,7 @@ if [ "$USER" = "root" ]; then
     ln -sf /usr/share/zoneinfo/$LOCALTIME /etc/localtime
 fi
 
-#
+
 # functions
 
 function set_conf {
@@ -16,13 +16,13 @@ function set_conf {
     IFS=$IFSO
 }
 
-#
+
 # PHP
 
-echo "date.timezone = \"${LOCALTIME}\"" >> $PHP_INI_DIR/conf.d/00-default.ini
+echo "date.timezone = \"Europe/Paris\"" >> $PHP_INI_DIR/conf.d/00-default.ini
 set_conf "PHP__" "$PHP_INI_DIR/conf.d/40-user.ini" "="
 
-chmod 777 -Rf /var/www
+#chmod 777 -Rf /var/www
 
 echo "Check composer";
 if [[ -f /var/www/composer.json && $COMPOSER_INSTALL -eq 1 ]]; then
@@ -33,13 +33,13 @@ fi
 
 
 echo -e "GENERATE_API_KEY = ${GENERATE_API_KEY}\n"
-echo -e "jwt_passhrase = ${jwt_passhrase}\n"
+echo -e "jwt_passphrase = ${jwt_passphrase}\n"
 if [[ $GENERATE_API_KEY -eq 1 && -z "$jwt_passphrase" ]]; then
     echo "Generation de la clef d'API"
     cd /var/www
     mkdir -p var/jwt
-    echo "$jwt_passhrase" | openssl genpkey -out var/jwt/private.pem -pass stdin -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096
-    echo "$jwt_passhrase" | openssl pkey -in var/jwt/private.pem -passin stdin -out var/jwt/public.pem -pubout
+    echo "$jwt_passphrase" | openssl genpkey -out var/jwt/private.pem -pass stdin -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096
+    echo "$jwt_passphrase" | openssl pkey -in var/jwt/private.pem -passin stdin -out var/jwt/public.pem -pubout
 fi
 
 if [[ -f /var/www/bin/console && -f /var/www/.env && $DOCTRINE_LOAD -eq 1 ]]; then
