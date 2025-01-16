@@ -50,6 +50,10 @@ COPY --from=0 /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4.8.0
 RUN ln -sf /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4
 RUN ln -sf /usr/lib/libcurl.so.4 /usr/lib/libcurl.so
 
+# install vector for data aggregation
+RUN curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | sh -s -- -y --prefix /usr/local
+#RUN rc-update add vector
+
 WORKDIR /var/www
 
 ENTRYPOINT ["sh", "/entrypoint.sh"]
