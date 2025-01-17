@@ -1,4 +1,3 @@
-#FROM curlimages/curl:7.83.1
 FROM curlimages/curl:latest
 
 FROM php:8.2-fpm-alpine
@@ -15,7 +14,6 @@ RUN set -ex; \
     libzip-dev \
     vim \
     libxml2-dev \
-    ssmtp \
     openssl-dev \
     pkgconfig \
     openssh-client \
@@ -25,9 +23,9 @@ RUN set -ex; \
     ; \
     rm -rf /var/lib/apt/lists/*;
 
-# Composer 
-RUN set -ex; \     
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \     
+# Composer
+RUN set -ex; \
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \
     chmod +x /usr/local/bin/composer
 
 
@@ -36,7 +34,8 @@ RUN curl -sSLf \
     https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
     chmod +x /usr/local/bin/install-php-extensions
 
-RUN install-php-extensions ldap xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql redis mongodb-1.15.1 ldap soap;
+RUN install-php-extensions ldap xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql redis mongodb-1.20.1 ldap soap;
+RUN install-php-extensions grpc protobuf opentelemetry;
 
 COPY docker/msmtp/msmtprc /etc/msmtprc
 COPY docker/docker-entrypoint.sh /entrypoint.sh
@@ -48,6 +47,10 @@ COPY --from=0 /usr/include/curl /usr/include/curl
 COPY --from=0 /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4.8.0
 RUN ln -sf /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4
 RUN ln -sf /usr/lib/libcurl.so.4 /usr/lib/libcurl.so
+
+# install vector for data aggregation
+RUN curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | sh -s -- -y --prefix /usr/local
+#RUN rc-update add vector
 
 WORKDIR /var/www
 
