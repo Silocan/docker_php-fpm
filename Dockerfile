@@ -34,7 +34,7 @@ RUN curl -sSLf \
     https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
     chmod +x /usr/local/bin/install-php-extensions
 
-RUN install-php-extensions ldap xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql redis mongodb-1.20.1 ldap soap;
+RUN install-php-extensions ldap xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql pdo_pgsql redis mongodb-1.20.1 ldap soap;
 RUN install-php-extensions grpc protobuf opentelemetry;
 
 COPY docker/msmtp/msmtprc /etc/msmtprc
@@ -49,7 +49,7 @@ RUN ln -sf /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4
 RUN ln -sf /usr/lib/libcurl.so.4 /usr/lib/libcurl.so
 
 # install vector for data aggregation
-RUN curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | sh -s -- -y --prefix /usr/local
+#RUN curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | sh -s -- -y --prefix /usr/local
 #RUN rc-update add vector
 
 WORKDIR /var/www
