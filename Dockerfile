@@ -1,86 +1,61 @@
 FROM curlimages/curl:7.83.1
 
-FROM php:7.4-fpm-alpine
+FROM php:7.4-fpm
+LABEL maintainer="nicolas@unid-consulting.fr"
 
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.15/community"  >> /etc/apk/repositories
+
 RUN set -ex; \
-    \
-    apk update; \
-    apk add \
-    wget \
-    bash \
-    libjpeg-turbo-dev \
+    apt-get -yqq update; \
+    apt-get -yqq install \
+    libjpeg62-turbo-dev \
     libpng-dev \
-    freetype-dev \
+    libfreetype6-dev \
     libxml2-dev \
-    icu-dev \
+    libicu-dev \
     msmtp \
-    curl-dev \
+    curl \
     git \
     zip \
     unzip \
     libzip-dev \
+    openssl \
     vim \
     libxml2-dev \
-    ssmtp \
-    openssl-dev \
-    libssh2 \
-    libssh2-dev \
-    libssh2-dev \
-    pkgconfig \
-    openssh-client \
-    imagemagick-dev \
-    imap-dev; \
+    libcurl3-dev \
+    libonig-dev \
+    mailutils \
+    wget \
+    ; \
     rm -rf /var/lib/apt/lists/*;
 
 # Mise en place de la partie python, libs, ... \
 RUN set -ex; \
     \
-    apk update; \
-    apk add \
-    openjdk9 python2 \
-    gcompat \
-    libc6-compat \
-    musl \
-    libgcc \
-    libstdc++ \
-    musl-dev \
-    gcc \
-    make; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+    python2 \
+    python2-dev \
+    wget \
+    ca-certificates; \
+    \
+    # Installation d'OpenJDK 9 depuis les archives Adoptium \
+    wget https://github.com/adoptium/temurin9-binaries/releases/download/jdk-9%2B181/OpenJDK9U-jdk_x64_linux_hotspot_9_181.tar.gz -O /tmp/openjdk9.tar.gz && \
+    mkdir -p /usr/lib/jvm && \
+    tar -xzf /tmp/openjdk9.tar.gz -C /usr/lib/jvm && \
+    mv /usr/lib/jvm/jdk-9+181 /usr/lib/jvm/java-9-openjdk-amd64 && \
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-9-openjdk-amd64/bin/java 1 && \
+    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/java-9-openjdk-amd64/bin/javac 1 && \
+    update-alternatives --set java /usr/lib/jvm/java-9-openjdk-amd64/bin/java && \
+    rm /tmp/openjdk9.tar.gz; \
+    \
     wget https://gitlab.com/api/v4/projects/5024297/packages/generic/pdftk-java/v3.3.3/pdftk-all.jar; \
-    mv pdftk-all.jar /usr/local/bin/pdftk.jar;
-
-# Créer une bibliothèque wrapper pour les symboles glibc manquants
-RUN echo '#include <math.h>' > /tmp/glibc_compat_wrapper.c && \
-    echo '#include <string.h>' >> /tmp/glibc_compat_wrapper.c && \
-    echo '#include <stdlib.h>' >> /tmp/glibc_compat_wrapper.c && \
-    echo '#include <stdio.h>' >> /tmp/glibc_compat_wrapper.c && \
-    echo 'int __isinf(double x) { return isinf(x); }' >> /tmp/glibc_compat_wrapper.c && \
-    echo 'int __isinff(float x) { return isinf(x); }' >> /tmp/glibc_compat_wrapper.c && \
-    echo 'int __isinfl(long double x) { return isinf(x); }' >> /tmp/glibc_compat_wrapper.c && \
-    echo 'char* __strdup(const char* s) { return strdup(s); }' >> /tmp/glibc_compat_wrapper.c && \
-    echo 'int __isnan(double x) { return isnan(x); }' >> /tmp/glibc_compat_wrapper.c && \
-    echo 'int __isnanf(float x) { return isnan(x); }' >> /tmp/glibc_compat_wrapper.c && \
-    echo 'int __isnanl(long double x) { return isnan(x); }' >> /tmp/glibc_compat_wrapper.c && \
-    gcc -shared -fPIC -o /usr/lib/libglibc_compat_wrapper.so /tmp/glibc_compat_wrapper.c -lm && \
-    rm /tmp/glibc_compat_wrapper.c && \
-    apk del gcc make;
+    mv pdftk-all.jar /usr/local/bin/pdftk.jar; \
+    rm -rf /var/lib/apt/lists/*;
 
 # install pdftk
 COPY --link  ./pdftk /usr/local/bin/pdftk 
 RUN chmod 775 /usr/local/bin/pdftk*
 
-# fix work iconv library with alphine
-RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.12/community/ gnu-libiconv=1.15-r2
-
-# Créer un wrapper Python pour garantir LD_PRELOAD avec gcompat et notre wrapper
-RUN echo '#!/bin/sh' > /usr/local/bin/python2-wrapper && \
-    echo 'export LD_PRELOAD="${LD_PRELOAD:-/usr/lib/preloadable_libiconv.so}:/usr/lib/libgcompat.so.0:/usr/lib/libglibc_compat_wrapper.so"' >> /usr/local/bin/python2-wrapper && \
-    echo 'exec /usr/bin/python2 "$@"' >> /usr/local/bin/python2-wrapper && \
-    chmod +x /usr/local/bin/python2-wrapper && \
-    ln -sf /usr/local/bin/python2-wrapper /usr/local/bin/python-wrapper
-
-ENV LD_PRELOAD=/usr/lib/preloadable_libiconv.so:/usr/lib/libgcompat.so.0:/usr/lib/libglibc_compat_wrapper.so
 
 # Composer 
 RUN set -ex; \     
