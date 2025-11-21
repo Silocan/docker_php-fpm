@@ -7,6 +7,8 @@ LABEL maintainer="nicolas@unid-consulting.fr"
 RUN set -ex; \
     apt-get -yqq update; \
     apt-get -yqq install \
+    bash \
+    supervisor \
     libjpeg62-turbo-dev \
     libpng-dev \
     libfreetype6-dev \
@@ -26,7 +28,8 @@ RUN set -ex; \
     mailutils \
     wget \
     ; \
-    rm -rf /var/lib/apt/lists/*;
+    rm -rf /var/lib/apt/lists/*; \
+    mkdir -p /var/log/supervisor /var/run /etc/supervisor/conf.d;
 
 # Mise en place de la partie python, libs, ... \
 RUN set -ex; \
@@ -77,6 +80,8 @@ RUN install-php-extensions bcmath calendar curl gd imagick imap intl ldap mongod
 
 COPY docker/msmtp/msmtprc /etc/msmtprc
 COPY docker/docker-entrypoint.sh /entrypoint.sh
+COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
+COPY docker/supervisor/conf.d/*.conf /etc/supervisor/conf.d/
 RUN chmod +x /entrypoint.sh
 
 COPY --from=0 /usr/bin/curl /usr/bin/curl
@@ -88,6 +93,9 @@ RUN ln -sf /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4; \
 
 WORKDIR /var/www
 
-ENTRYPOINT ["sh", "/entrypoint.sh"]
+ENTRYPOINT ["bash", "/entrypoint.sh"]
 
-CMD ["php-fpm", "-F"]
+# Par défaut, lancer supervisor qui gère php-fpm et les consumers
+# Pour lancer uniquement php-fpm : docker run ... php-fpm -F
+# Pour lancer uniquement un consumer : docker run ... php bin/console messenger:consume async_email
+CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf", "-n"]
