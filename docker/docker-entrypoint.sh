@@ -25,7 +25,7 @@ set_conf "PHP__" "$PHP_INI_DIR/conf.d/40-user.ini" "="
 chmod 777 -Rf /var/www
 
 echo "Check composer";
-if [[ -f /var/www/composer.json && $COMPOSER_INSTALL -eq 1 ]]; then
+if [[ -f /var/www/composer.json && "${COMPOSER_INSTALL}" == "1" ]]; then
     echo "Composer install";
     cd /var/www
     composer install --prefer-dist --no-progress --no-suggest --no-interaction --optimize-autoloader
@@ -34,7 +34,7 @@ fi
 
 echo -e "GENERATE_API_KEY = ${GENERATE_API_KEY}\n"
 echo -e "jwt_passhrase = ${jwt_passhrase}\n"
-if [[ $GENERATE_API_KEY -eq 1 && -z "$jwt_passphrase" ]]; then
+if [[ "${GENERATE_API_KEY}" == "1" && -z "$jwt_passphrase" ]]; then
     echo "Generation de la clef d'API"
     cd /var/www
     mkdir -p var/jwt
@@ -42,7 +42,7 @@ if [[ $GENERATE_API_KEY -eq 1 && -z "$jwt_passphrase" ]]; then
     echo "$jwt_passhrase" | openssl pkey -in var/jwt/private.pem -passin stdin -out var/jwt/public.pem -pubout
 fi
 
-if [[ -f /var/www/bin/console && -f /var/www/.env && $DOCTRINE_LOAD -eq 1 ]]; then
+if [[ -f /var/www/bin/console && -f /var/www/.env && "${DOCTRINE_LOAD}" == "1" ]]; then
     echo "--- Doctrine initialisation";
     cd /var/www
 
