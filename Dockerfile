@@ -10,6 +10,7 @@ RUN apt update; \
     curl \
     openssh-client \
     bash \
+    qpdf \
     ; \
     rm -rf /var/lib/apt/lists/*;
 
@@ -47,7 +48,7 @@ RUN mkdir -p /tmp/blackfire \
     && mv /tmp/blackfire/blackfire /usr/bin/blackfire \
     && rm -Rf /tmp/blackfire
 
-RUN install-php-extensions blackfire xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql redis mongodb-1.15.1 ldap soap;
+RUN install-php-extensions bcmath blackfire calendar curl gd intl ldap mongodb-1.15.1 mysqli opcache pdo pdo_mysql redis soap xdebug xml zip;
 
 COPY --link docker/www.conf /usr/local/etc/php-fpm.d/www.conf
 
