@@ -19,6 +19,7 @@ RUN set -ex; \
     openssh-client \
     libssh2 \
     libssh2-dev \
+    qpdf \
     gcc make g++ zlib-dev autoconf linux-headers \
     ; \
     rm -rf /var/lib/apt/lists/*;
@@ -34,8 +35,8 @@ RUN curl -sSLf \
     https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
     chmod +x /usr/local/bin/install-php-extensions
 
-RUN install-php-extensions ldap xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql pdo_pgsql redis mongodb-1.20.1 ldap soap;
-RUN install-php-extensions grpc protobuf opentelemetry;
+RUN install-php-extensions bcmath calendar curl gd intl ldap mongodb-1.20.1 mysqli opcache pdo pdo_mysql pdo_pgsql redis soap xdebug xml zip;
+RUN install-php-extensions grpc opentelemetry protobuf;
 
 COPY docker/msmtp/msmtprc /etc/msmtprc
 COPY docker/docker-entrypoint.sh /entrypoint.sh
