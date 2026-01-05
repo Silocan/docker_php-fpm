@@ -54,4 +54,7 @@ if [[ -f /var/www/bin/console && -f /var/www/.env && "${DOCTRINE_LOAD}" == "1" ]
     #php bin/console doctrine:fixtures:load --append
 fi
 
+# Démarre supervisor en arrière-plan
+supervisord -c /etc/supervisor/supervisord.conf
+
 exec "$@"

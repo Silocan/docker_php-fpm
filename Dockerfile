@@ -81,7 +81,7 @@ RUN install-php-extensions bcmath calendar curl gd imagick imap intl ldap mongod
 COPY docker/msmtp/msmtprc /etc/msmtprc
 COPY docker/docker-entrypoint.sh /entrypoint.sh
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
-COPY docker/supervisor/conf.d/*.conf /etc/supervisor/conf.d/
+#COPY docker/supervisor/conf.d/*.conf /etc/supervisor/conf.d/
 RUN chmod +x /entrypoint.sh
 
 COPY --from=0 /usr/bin/curl /usr/bin/curl
