@@ -39,21 +39,14 @@ RUN set -ex; \
     python2 \
     python2-dev \
     wget \
-    ca-certificates; \
+    ca-certificates \
+    openjdk-11-jre \
+    libreoffice; \
     \
-    # Installation d'OpenJDK 9 depuis les archives Adoptium \
-    wget https://github.com/adoptium/temurin9-binaries/releases/download/jdk-9%2B181/OpenJDK9U-jdk_x64_linux_hotspot_9_181.tar.gz -O /tmp/openjdk9.tar.gz && \
-    mkdir -p /usr/lib/jvm && \
-    tar -xzf /tmp/openjdk9.tar.gz -C /usr/lib/jvm && \
-    mv /usr/lib/jvm/jdk-9+181 /usr/lib/jvm/java-9-openjdk-amd64 && \
-    update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-9-openjdk-amd64/bin/java 1 && \
-    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/java-9-openjdk-amd64/bin/javac 1 && \
-    update-alternatives --set java /usr/lib/jvm/java-9-openjdk-amd64/bin/java && \
-    rm /tmp/openjdk9.tar.gz; \
-    \
-    wget https://gitlab.com/api/v4/projects/5024297/packages/generic/pdftk-java/v3.3.3/pdftk-all.jar; \
-    mv pdftk-all.jar /usr/local/bin/pdftk.jar; \
     rm -rf /var/lib/apt/lists/*;
+# Copie de pdftk 
+# https://gitlab.com/api/v4/projects/5024297/packages/generic/pdftk-java/v3.3.3/pdftk-all.jar
+COPY --link pdftk-all.jar /usr/local/bin/pdftk.jar
 
 # install pdftk
 COPY --link  ./pdftk /usr/local/bin/pdftk 
@@ -83,6 +76,9 @@ COPY docker/docker-entrypoint.sh /entrypoint.sh
 COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 #COPY docker/supervisor/conf.d/*.conf /etc/supervisor/conf.d/
 RUN chmod +x /entrypoint.sh
+
+# Suppresion de la regle de securité pour Imagick et la conversion image en pdf
+RUN sed -i '/policy domain="coder" rights="none" pattern="PDF"/d' /etc/ImageMagick-6/policy.xml
 
 COPY --from=0 /usr/bin/curl /usr/bin/curl
 COPY --from=0 /usr/include/curl /usr/include/curl
