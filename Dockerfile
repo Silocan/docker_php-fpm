@@ -30,7 +30,7 @@ RUN set -ex; \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \     
     chmod +x /usr/local/bin/composer
 
-RUN install-php-extensions xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql redis mongodb-1.15.1 ldap soap;
+RUN install-php-extensions bcmath calendar curl gd intl ldap mongodb-1.15.1 mysqli opcache pdo pdo_mysql pdo_sqlsrv redis soap xdebug xml zip;
 
 COPY --link docker/www.conf /usr/local/etc/php-fpm.d/www.conf
 
