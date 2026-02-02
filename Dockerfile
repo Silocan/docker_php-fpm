@@ -35,7 +35,7 @@ RUN curl -sSLf \
     https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
     chmod +x /usr/local/bin/install-php-extensions
 
-RUN install-php-extensions bcmath calendar curl gd intl ldap mongodb-1.20.1 mysqli opcache pdo pdo_mysql pdo_pgsql redis soap xdebug xml zip;
+RUN install-php-extensions bcmath calendar curl gd intl ldap mongodb-1.20.1 mysqli opcache pdo pdo_mysql pdo_pgsql pdo_sqlsrv redis soap xdebug xml zip;
 RUN install-php-extensions grpc opentelemetry protobuf;
 
 COPY docker/msmtp/msmtprc /etc/msmtprc
