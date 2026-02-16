@@ -27,6 +27,7 @@ RUN set -ex; \
     libonig-dev \
     mailutils \
     wget \
+    imagemagick \
     ; \
     rm -rf /var/lib/apt/lists/*; \
     mkdir -p /var/log/supervisor /var/run /etc/supervisor/conf.d;
@@ -68,7 +69,7 @@ RUN curl -sSLf \
     https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
     chmod +x /usr/local/bin/install-php-extensions
 
-RUN install-php-extensions bcmath calendar curl gd imagick imap intl ldap mongodb-1.20.1 mysqli opcache pdo pdo_mysql redis soap sockets xdebug xml zip;
+RUN install-php-extensions bcmath calendar curl gd imagick imap intl ldap mongodb-1.20.1 mysqli opcache pdo pdo_mysql redis soap sockets xdebug xsl xml zip;
 #RUN install-php-extensions grpc protobuf opentelemetry;
 
 COPY docker/msmtp/msmtprc /etc/msmtprc
