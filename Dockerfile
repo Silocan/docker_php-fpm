@@ -22,8 +22,10 @@ RUN set -ex; \
     libcurl3-dev \
     libonig-dev \
     mailutils \
+    bash \
     ; \
-    rm -rf /var/lib/apt/lists/*;
+    rm -rf /var/lib/apt/lists/*; \
+    ln -sf /bin/bash /bin/sh;
 
 # Composer 
 RUN set -ex; \     
@@ -35,7 +37,7 @@ RUN curl -sSLf \
     https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
     chmod +x /usr/local/bin/install-php-extensions
 
-RUN install-php-extensions ldap xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql redis mongodb-1.20.1 ldap soap calendar sockets imap imagick;
+RUN install-php-extensions bcmath calendar curl gd imagick imap intl ldap mongodb-1.20.1 mysqli opcache pdo pdo_mysql redis soap sockets xdebug xsl xml zip;
 #RUN install-php-extensions grpc protobuf opentelemetry;
 
 COPY docker/msmtp/msmtprc /etc/msmtprc
