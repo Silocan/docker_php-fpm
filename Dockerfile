@@ -1,6 +1,6 @@
 FROM curlimages/curl:latest
 
-FROM php:8.2-fpm-alpine
+FROM php:8.5-fpm-alpine
 
 RUN set -ex; \
     \
@@ -20,6 +20,7 @@ RUN set -ex; \
     libssh2 \
     libssh2-dev \
     qpdf \
+    bash \
     gcc make g++ zlib-dev autoconf linux-headers \
     ; \
     rm -rf /var/lib/apt/lists/*;
@@ -35,7 +36,7 @@ RUN curl -sSLf \
     https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
     chmod +x /usr/local/bin/install-php-extensions
 
-RUN install-php-extensions bcmath calendar curl gd intl ldap mongodb-1.20.1 mysqli opcache pdo pdo_mysql pdo_pgsql pdo_sqlsrv redis soap xdebug xml zip;
+RUN install-php-extensions amqp bcmath calendar curl gd intl ldap mongodb mysqli opcache pdo pdo_mysql pdo_pgsql redis soap xdebug xml xsl zip;
 RUN install-php-extensions grpc opentelemetry protobuf;
 
 COPY docker/msmtp/msmtprc /etc/msmtprc
@@ -55,6 +56,6 @@ RUN ln -sf /usr/lib/libcurl.so.4 /usr/lib/libcurl.so
 
 WORKDIR /var/www
 
-ENTRYPOINT ["sh", "/entrypoint.sh"]
+ENTRYPOINT ["bash", "/entrypoint.sh"]
 
 CMD ["php-fpm", "-F"]
