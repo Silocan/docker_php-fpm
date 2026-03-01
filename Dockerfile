@@ -36,7 +36,7 @@ RUN curl -sSLf \
     https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
     chmod +x /usr/local/bin/install-php-extensions
 
-RUN install-php-extensions ldap xdebug intl opcache pdo gd zip bcmath xml mysqli curl calendar pdo_mysql redis mongodb-1.15.1 ldap soap;
+RUN install-php-extensions amqp bcmath calendar curl gd intl ldap mongodb mysqli opcache pdo pdo_mysql pdo_pgsql redis soap xdebug xml xsl zip;
 
 COPY docker/msmtp/msmtprc /etc/msmtprc
 COPY docker/docker-entrypoint.sh /entrypoint.sh
