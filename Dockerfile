@@ -21,6 +21,7 @@ RUN set -ex; \
     openssl-dev \
     pkgconfig \
     openssh-client \
+    bash \
     ; \
     rm -rf /var/lib/apt/lists/*; 
 
@@ -35,7 +36,7 @@ RUN curl -sSLf \
     https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
     chmod +x /usr/local/bin/install-php-extensions
 
-RUN install-php-extensions bcmath blackfire calendar curl gd intl ldap mongodb-1.21.2 mysqli opcache pdo pdo_mysql redis soap xml xdebug zip;
+RUN install-php-extensions amqp bcmath calendar curl gd intl ldap mongodb mysqli opcache pdo pdo_mysql pdo_pgsql redis soap xdebug xml xsl zip;
 
 COPY docker/msmtp/msmtprc /etc/msmtprc
 COPY docker/docker-entrypoint.sh /entrypoint.sh
