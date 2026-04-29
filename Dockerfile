@@ -1,12 +1,12 @@
 FROM curlimages/curl:7.83.1
 
-FROM php:7.4-fpm
+FROM php:8.3-fpm
 LABEL maintainer="nicolas@unid-consulting.fr"
-
 
 RUN set -ex; \
     apt-get -yqq update; \
     apt-get -yqq install \
+    ca-certificates \
     bash \
     supervisor \
     libjpeg62-turbo-dev \
@@ -32,37 +32,10 @@ RUN set -ex; \
     rm -rf /var/lib/apt/lists/*; \
     mkdir -p /var/log/supervisor /var/run /etc/supervisor/conf.d;
 
-# Mise en place de la partie python, libs, ... \
-RUN set -ex; \
-    \
-    apt-get update; \
-    apt-get install -y --no-install-recommends \
-    python2 \
-    python2-dev \
-    wget \
-    ca-certificates \
-    openjdk-11-jre \
-    libreoffice; \
-    \
-    rm -rf /var/lib/apt/lists/*;
-# Copie de pdftk 
-# https://gitlab.com/api/v4/projects/5024297/packages/generic/pdftk-java/v3.3.3/pdftk-all.jar
-COPY --link pdftk-all.jar /usr/local/bin/pdftk.jar
-
-# install pdftk
-COPY --link  ./pdftk /usr/local/bin/pdftk 
-RUN chmod 775 /usr/local/bin/pdftk*
-
-
 # Composer 
-RUN set -ex; \     
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \     
+RUN set -ex; \
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \
     chmod +x /usr/local/bin/composer
-
-RUN set -ex; \     
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer1 --version=1.10.26 ; \     
-    chmod +x /usr/local/bin/composer1
-
 
 RUN curl -sSLf \
     -o /usr/local/bin/install-php-extensions \
@@ -79,7 +52,7 @@ COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 RUN chmod +x /entrypoint.sh
 
 # Suppresion de la regle de securité pour Imagick et la conversion image en pdf
-RUN sed -i '/policy domain="coder" rights="none" pattern="PDF"/d' /etc/ImageMagick-6/policy.xml
+#RUN sed -i '/policy domain="coder" rights="none" pattern="PDF"/d' /etc/ImageMagick-6/policy.xml
 
 COPY --from=0 /usr/bin/curl /usr/bin/curl
 COPY --from=0 /usr/include/curl /usr/include/curl
