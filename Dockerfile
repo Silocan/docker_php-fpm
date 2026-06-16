@@ -35,12 +35,12 @@ RUN chmod +x /entrypoint.sh
 
 # Composer v1.x
 RUN set -ex; \
-    curl -sS https://getcomposer.org/installer | php -- --version=1.10.26 --install-dir=/usr/local/bin --filename=composer; \     
-    chmod +x /usr/local/bin/composer
+    curl -sS https://getcomposer.org/installer | php -- --version=1.10.26 --install-dir=/usr/local/bin --filename=composer1; \     
+    chmod +x /usr/local/bin/composer1
 # Composer v2.x
 RUN set -ex; \  
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer2; \     
-    chmod +x /usr/local/bin/composer2
+    curl -sS https://getcomposer.org/installer | php -- --version=2.2.25 --install-dir=/usr/local/bin --filename=composer; \     
+    chmod +x /usr/local/bin/composer
 
 # Client blackfire
 RUN mkdir -p /tmp/blackfire \
