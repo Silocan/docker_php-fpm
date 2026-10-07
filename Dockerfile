@@ -42,9 +42,8 @@ COPY docker/msmtp/msmtprc /etc/msmtprc
 COPY docker/docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Copy curl
+# Copy curl (curlimages/curl n'embarque plus les headers — inutiles au runtime)
 COPY --from=0 /usr/bin/curl /usr/bin/curl
-COPY --from=0 /usr/include/curl /usr/include/curl
 COPY --from=0 /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4.8.0
 RUN ln -sf /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4
 RUN ln -sf /usr/lib/libcurl.so.4 /usr/lib/libcurl.so
