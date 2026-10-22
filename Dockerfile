@@ -3,7 +3,7 @@
 # curl avec SFTP/SCP (libssh2) — le paquet Alpine ne l'embarque pas
 FROM curlimages/curl:8.12.1 AS curl
 
-FROM php:8.5-fpm-alpine
+FROM php:8.5.12-fpm-alpine
 
 ARG TARGETARCH
 
@@ -100,6 +100,9 @@ RUN chmod +x /entrypoint.sh
 WORKDIR /var/www
 
 EXPOSE 9000
+
+# CVE-2026-109618 / CVE-2026-109619 : lu au démarrage via conf.d, avant le parsing des requêtes
+RUN printf 'session.upload_progress.enabled = Off\n' > "${PHP_INI_DIR}/conf.d/99-disable-upload-progress.ini"
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["php-fpm", "-F"]
