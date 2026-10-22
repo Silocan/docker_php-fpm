@@ -1,4 +1,15 @@
 FROM php:7.2-fpm
+RUN set -eux; \
+    if [ -f /etc/apt/sources.list ]; then \
+      sed -i \
+        -e 's|http://deb.debian.org/debian-security|http://archive.debian.org/debian-security|g' \
+        -e 's|http://security.debian.org/debian-security|http://archive.debian.org/debian-security|g' \
+        -e 's|http://deb.debian.org/debian |http://archive.debian.org/debian |g' \
+        /etc/apt/sources.list; \
+      sed -i '/buster-updates/d; /bullseye-updates/d' /etc/apt/sources.list; \
+      printf 'Acquire::Check-Valid-Until "false";\n' > /etc/apt/apt.conf.d/99no-check-valid-until; \
+    fi
+
 
 RUN set -ex; \
     \
@@ -26,7 +37,7 @@ RUN set -ex; \
     docker-php-ext-configure mysqli; \
     docker-php-ext-configure gd --with-freetype-dir=/usr/include --with-jpeg-dir=/usr/include; \
     docker-php-ext-install intl opcache pdo pdo_mysql mbstring gd zip bcmath xml json mysqli curl calendar; \
-    pecl install mongodb && echo "extension=mongodb.so" >> $PHP_INI_DIR/conf.d/mongodb.ini
+    pecl install mongodb-1.16.2 && echo "extension=mongodb.so" >> $PHP_INI_DIR/conf.d/mongodb.ini
 
 # Composer 
 RUN set -ex; \     
@@ -50,3 +61,6 @@ WORKDIR /var/www
 ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["php-fpm", "-F"]
+
+# CVE-2026-109618 / CVE-2026-109619 : lu au démarrage via conf.d, avant le parsing des requêtes
+RUN printf 'session.upload_progress.enabled = Off\n' > "${PHP_INI_DIR}/conf.d/99-disable-upload-progress.ini"
