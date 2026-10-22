@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.2.35-fpm
 
 RUN apt update; \
     apt install \
@@ -34,6 +34,9 @@ RUN set -ex; \
 RUN install-php-extensions bcmath blackfire calendar curl gd intl ldap mongodb-1.15.1 mysqli opcache pdo pdo_mysql pdo_sqlsrv redis soap xdebug xml zip;
 
 COPY --link docker/www.conf /usr/local/etc/php-fpm.d/www.conf
+
+# CVE-2026-109618 / CVE-2026-109619 : lu au démarrage via conf.d, avant le parsing des requêtes
+RUN printf 'session.upload_progress.enabled = Off\n' > "${PHP_INI_DIR}/conf.d/99-disable-upload-progress.ini"
 
 ENTRYPOINT ["bash", "/entrypoint.sh"]
 
