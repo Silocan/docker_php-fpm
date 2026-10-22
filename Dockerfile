@@ -1,43 +1,89 @@
+# syntax=docker/dockerfile:1
+
 FROM php:8.2-fpm
 
-RUN apt update; \
-    apt install \
-    git \
-    zip \
-    unzip \
-    vim \
-    ssmtp \
-    curl \
-    openssh-client \
-    bash \
-    qpdf \
-    ; \
-    rm -rf /var/lib/apt/lists/*;
+ARG TARGETARCH
 
-RUN curl -sSLf \
-    -o /usr/local/bin/install-php-extensions \
-    https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
-    chmod +x /usr/local/bin/install-php-extensions
+ENV LOCALTIME=Europe/Paris \
+    LANG=fr_FR.UTF-8 \
+    LANGUAGE=fr_FR.UTF-8 \
+    VAULT_VERSION=1.19.5 \
+    SHELL=/bin/bash
 
+# Runtime + outils CI/CD. curl Debian est déjà compilé avec libssh2 (SFTP).
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    apt-get update \
+    && apt-get install -y --no-install-recommends \
+        bash \
+        ca-certificates \
+        curl \
+        git \
+        libssh2-1 \
+        msmtp \
+        openssh-client \
+        openssl \
+        rsync \
+        tzdata \
+        unzip \
+        wget \
+        zip \
+        qpdf \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY --link docker/msmtp/msmtprc /etc/msmtprc
-COPY --link docker/docker-entrypoint.sh /entrypoint.sh
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+
+# Extensions PHP (build deps gérées puis retirées par install-php-extensions)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    install-php-extensions \
+        amqp \
+        bcmath \
+        calendar \
+        curl \
+        gd \
+        intl \
+        ldap \
+        mongodb \
+        mysqli \
+        opcache \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        redis \
+        soap \
+        xdebug \
+        xml \
+        xsl \
+        zip \
+        pdo_sqlsrv
+
+RUN wget -qO /usr/local/bin/phpunit10 https://phar.phpunit.de/phpunit-10.phar \
+    && wget -qO /usr/local/bin/phpunit11 https://phar.phpunit.de/phpunit-11.phar \
+    && chmod +x /usr/local/bin/phpunit10 /usr/local/bin/phpunit11 \
+    && ln -sf phpunit11 /usr/local/bin/phpunit
+
+RUN case "${TARGETARCH}" in \
+        amd64) VAULT_ARCH=amd64 ;; \
+        arm64) VAULT_ARCH=arm64 ;; \
+        *) echo "arch non supportée: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac \
+    && wget -qO /tmp/vault.zip \
+        "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip" \
+    && unzip -q /tmp/vault.zip -d /usr/local/bin \
+    && rm -f /tmp/vault.zip \
+    && chmod +x /usr/local/bin/vault \
+    && vault version
+
+COPY docker/msmtp/msmtprc /etc/msmtprc
+COPY docker/docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 WORKDIR /var/www
 
-# Composer 
-RUN set -ex; \     
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \     
-    chmod +x /usr/local/bin/composer
-
-RUN install-php-extensions bcmath blackfire calendar curl gd intl ldap mongodb-1.15.1 mysqli opcache pdo pdo_mysql pdo_sqlsrv redis soap xdebug xml zip;
-
-COPY --link docker/www.conf /usr/local/etc/php-fpm.d/www.conf
-
-ENTRYPOINT ["bash", "/entrypoint.sh"]
-
-CMD ["php-fpm", "-F"]
+EXPOSE 9000
 
 # CVE-2026-109618 / CVE-2026-109619 : lu au démarrage via conf.d, avant le parsing des requêtes
 RUN printf 'session.upload_progress.enabled = Off\n' > "${PHP_INI_DIR}/conf.d/99-disable-upload-progress.ini"
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["php-fpm", "-F"]
