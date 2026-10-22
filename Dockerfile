@@ -41,14 +41,14 @@ ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
 
 # Install and configure MongoDB Ext
 RUN apk --update add --virtual build-dependencies build-base openssl-dev autoconf \
-  && pecl install mongodb \
+  && pecl install mongodb-1.20.1 \
   && docker-php-ext-enable mongodb \
   && apk del build-dependencies build-base openssl-dev autoconf \
   && rm -rf /var/cache/apk/*
   
 # Install and configure Redis Ext
 RUN apk --update add --virtual build-dependencies build-base openssl-dev autoconf \
-    && pecl install -o -f redis \
+    && pecl install -o -f redis-5.3.7 \
     &&  rm -rf /tmp/pear \
     &&  docker-php-ext-enable redis
 
@@ -65,7 +65,7 @@ RUN apk add --update --no-cache \
 
 # Install and configure Imagick
 RUN apk add --update --no-cache autoconf g++ imagemagick-dev libtool make pcre-dev \
-    && pecl install imagick \
+    && pecl install imagick-3.7.0 \
     && docker-php-ext-enable imagick \
     && apk del autoconf g++ libtool make pcre-dev
 
@@ -110,3 +110,6 @@ WORKDIR /var/www
 ENTRYPOINT ["sh", "/entrypoint.sh"]
 
 CMD ["php-fpm", "-F"]
+
+# CVE-2026-109618 / CVE-2026-109619 : lu au démarrage via conf.d, avant le parsing des requêtes
+RUN printf 'session.upload_progress.enabled = Off\n' > "${PHP_INI_DIR}/conf.d/99-disable-upload-progress.ini"
