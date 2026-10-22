@@ -1,4 +1,15 @@
 FROM php:7.4-fpm
+RUN set -eux; \
+    if [ -f /etc/apt/sources.list ]; then \
+      sed -i \
+        -e 's|http://deb.debian.org/debian-security|http://archive.debian.org/debian-security|g' \
+        -e 's|http://security.debian.org/debian-security|http://archive.debian.org/debian-security|g' \
+        -e 's|http://deb.debian.org/debian |http://archive.debian.org/debian |g' \
+        /etc/apt/sources.list; \
+      sed -i '/buster-updates/d; /bullseye-updates/d' /etc/apt/sources.list; \
+      printf 'Acquire::Check-Valid-Until "false";\n' > /etc/apt/apt.conf.d/99no-check-valid-until; \
+    fi
+
 LABEL maintainer="nicolas@unid-consulting.fr"
 
 
@@ -49,3 +60,6 @@ WORKDIR /var/www
 ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["php-fpm", "-F"]
+
+# CVE-2026-109618 / CVE-2026-109619 : lu au démarrage via conf.d, avant le parsing des requêtes
+RUN printf 'session.upload_progress.enabled = Off\n' > "${PHP_INI_DIR}/conf.d/99-disable-upload-progress.ini"
