@@ -1,74 +1,95 @@
-FROM curlimages/curl:7.83.1
+# syntax=docker/dockerfile:1
 
 FROM php:8.3-fpm
-LABEL maintainer="nicolas@unid-consulting.fr"
 
-RUN set -ex; \
-    apt-get -yqq update; \
-    apt-get -yqq install \
-    ca-certificates \
-    bash \
-    supervisor \
-    libjpeg62-turbo-dev \
-    libpng-dev \
-    libfreetype6-dev \
-    libxml2-dev \
-    libicu-dev \
-    msmtp \
-    curl \
-    git \
-    zip \
-    unzip \
-    libzip-dev \
-    openssl \
-    vim \
-    libxml2-dev \
-    libcurl3-dev \
-    libonig-dev \
-    mailutils \
-    wget \
-    imagemagick \
-    ; \
-    rm -rf /var/lib/apt/lists/*; \
-    mkdir -p /var/log/supervisor /var/run /etc/supervisor/conf.d;
+ARG TARGETARCH
 
-# Composer 
-RUN set -ex; \
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer; \
-    chmod +x /usr/local/bin/composer
+ENV LOCALTIME=Europe/Paris \
+    LANG=fr_FR.UTF-8 \
+    LANGUAGE=fr_FR.UTF-8 \
+    VAULT_VERSION=1.19.5 \
+    SHELL=/bin/bash
 
-RUN curl -sSLf \
-    -o /usr/local/bin/install-php-extensions \
-    https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
-    chmod +x /usr/local/bin/install-php-extensions
+# Runtime + outils CI/CD. curl Debian est déjà compilé avec libssh2 (SFTP).
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    apt-get update \
+    && apt-get install -y --no-install-recommends \
+        bash \
+        ca-certificates \
+        curl \
+        git \
+        libssh2-1 \
+        msmtp \
+        openssh-client \
+        openssl \
+        rsync \
+        tzdata \
+        unzip \
+        wget \
+        zip \
+        supervisor \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN install-php-extensions amqp bcmath calendar curl gd imagick imap intl ldap mongodb-1.20.1 mysqli opcache pdo pdo_mysql redis soap sockets xdebug xsl xml zip;
-#RUN install-php-extensions grpc protobuf opentelemetry;
+RUN mkdir -p /var/log/supervisor /var/run /etc/supervisor/conf.d
+
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+
+# Extensions PHP (build deps gérées puis retirées par install-php-extensions)
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    install-php-extensions \
+        amqp \
+        bcmath \
+        calendar \
+        curl \
+        gd \
+        intl \
+        ldap \
+        mongodb \
+        mysqli \
+        opcache \
+        pdo \
+        pdo_mysql \
+        pdo_pgsql \
+        redis \
+        soap \
+        xdebug \
+        xml \
+        xsl \
+        zip \
+        imagick \
+        imap \
+        sockets
+
+RUN wget -qO /usr/local/bin/phpunit10 https://phar.phpunit.de/phpunit-10.phar \
+    && wget -qO /usr/local/bin/phpunit11 https://phar.phpunit.de/phpunit-11.phar \
+    && chmod +x /usr/local/bin/phpunit10 /usr/local/bin/phpunit11 \
+    && ln -sf phpunit11 /usr/local/bin/phpunit
+
+RUN case "${TARGETARCH}" in \
+        amd64) VAULT_ARCH=amd64 ;; \
+        arm64) VAULT_ARCH=arm64 ;; \
+        *) echo "arch non supportée: ${TARGETARCH}" >&2; exit 1 ;; \
+    esac \
+    && wget -qO /tmp/vault.zip \
+        "https://releases.hashicorp.com/vault/${VAULT_VERSION}/vault_${VAULT_VERSION}_linux_${VAULT_ARCH}.zip" \
+    && unzip -q /tmp/vault.zip -d /usr/local/bin \
+    && rm -f /tmp/vault.zip \
+    && chmod +x /usr/local/bin/vault \
+    && vault version
+
+COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
 
 COPY docker/msmtp/msmtprc /etc/msmtprc
 COPY docker/docker-entrypoint.sh /entrypoint.sh
-COPY docker/supervisord.conf /etc/supervisor/supervisord.conf
-#COPY docker/supervisor/conf.d/*.conf /etc/supervisor/conf.d/
 RUN chmod +x /entrypoint.sh
-
-# Suppresion de la regle de securité pour Imagick et la conversion image en pdf
-#RUN sed -i '/policy domain="coder" rights="none" pattern="PDF"/d' /etc/ImageMagick-6/policy.xml
-
-COPY --from=0 /usr/bin/curl /usr/bin/curl
-COPY --from=0 /usr/include/curl /usr/include/curl
-COPY --from=0 /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4.8.0
-RUN ln -sf /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4; \
-    ln -sf /usr/lib/libcurl.so.4 /usr/lib/libcurl.so;
-
 
 WORKDIR /var/www
 
-ENTRYPOINT ["bash", "/entrypoint.sh"]
-
-# Par défaut, lancer supervisor qui gère php-fpm et les consumers
-# Pour lancer uniquement php-fpm : docker run ... php-fpm -F
-# Pour lancer uniquement un consumer : docker run ... php bin/console messenger:consume async_email
-CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf", "-n"]
+EXPOSE 9000
 
 # CVE-2026-109618 / CVE-2026-109619 : lu au démarrage via conf.d, avant le parsing des requêtes
 RUN printf 'session.upload_progress.enabled = Off\n' > "${PHP_INI_DIR}/conf.d/99-disable-upload-progress.ini"
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf", "-n"]
