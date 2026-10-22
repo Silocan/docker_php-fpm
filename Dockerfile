@@ -38,3 +38,6 @@ COPY --link docker/www.conf /usr/local/etc/php-fpm.d/www.conf
 ENTRYPOINT ["bash", "/entrypoint.sh"]
 
 CMD ["php-fpm", "-F"]
+
+# CVE-2026-109618 / CVE-2026-109619 : lu au démarrage via conf.d, avant le parsing des requêtes
+RUN printf 'session.upload_progress.enabled = Off\n' > "${PHP_INI_DIR}/conf.d/99-disable-upload-progress.ini"
