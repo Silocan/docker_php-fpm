@@ -69,3 +69,6 @@ ENTRYPOINT ["bash", "/entrypoint.sh"]
 # Pour lancer uniquement php-fpm : docker run ... php-fpm -F
 # Pour lancer uniquement un consumer : docker run ... php bin/console messenger:consume async_email
 CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf", "-n"]
+
+# CVE-2026-109618 / CVE-2026-109619 : lu au démarrage via conf.d, avant le parsing des requêtes
+RUN printf 'session.upload_progress.enabled = Off\n' > "${PHP_INI_DIR}/conf.d/99-disable-upload-progress.ini"
