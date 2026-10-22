@@ -45,13 +45,15 @@ RUN chmod +x /entrypoint.sh
 
 # Copy curl
 COPY --from=0 /usr/bin/curl /usr/bin/curl
-COPY --from=0 /usr/include/curl /usr/include/curl
+# curl:latest ne fournit plus /usr/include/curl
+# COPY --from=0 /usr/include/curl /usr/include/curl
 COPY --from=0 /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4.8.0
 RUN ln -sf /usr/lib/libcurl.so.4.8.0 /usr/lib/libcurl.so.4
 RUN ln -sf /usr/lib/libcurl.so.4 /usr/lib/libcurl.so
 
 # install vector for data aggregation
-RUN curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | sh -s -- -y --prefix /usr/local
+RUN apk add --no-cache bash \
+ && curl --proto '=https' --tlsv1.2 -sSfL https://sh.vector.dev | bash -s -- -y --prefix /usr/local
 #RUN rc-update add vector
 
 WORKDIR /var/www
@@ -59,3 +61,6 @@ WORKDIR /var/www
 ENTRYPOINT ["sh", "/entrypoint.sh"]
 
 CMD ["php-fpm", "-F"]
+
+# CVE-2026-109618 / CVE-2026-109619 : lu au démarrage via conf.d, avant le parsing des requêtes
+RUN printf 'session.upload_progress.enabled = Off\n' > "${PHP_INI_DIR}/conf.d/99-disable-upload-progress.ini"
