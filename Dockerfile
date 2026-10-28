@@ -21,6 +21,7 @@ RUN set -eux; \
     && printf 'Acquire::Check-Valid-Until "false";\n' > /etc/apt/apt.conf.d/99no-check-valid-until
 
 # Runtime + outils CI/CD. curl Debian est déjà compilé avec libssh2 (SFTP).
+# LibreOffice tire python3 ; python2 + python-is-python2 gardent `python` sur 2.7.
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -40,6 +41,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
         supervisor \
         openjdk-11-jre \
         libreoffice \
+        python2 \
+        python2-dev \
+        python-is-python2 \
+    && ln -sf python2 /usr/bin/python \
+    && python -c 'import sys; assert sys.version_info[0] == 2' \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /var/log/supervisor /var/run /etc/supervisor/conf.d
