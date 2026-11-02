@@ -14,6 +14,18 @@ RUN apt update; \
     ; \
     rm -rf /var/lib/apt/lists/*;
 
+# LibreOffice. Debian Trixie n'a plus openjdk-11 : openjdk-21-jre-headless.
+# Polices : ttf-dejavu -> fonts-dejavu, font-noto -> fonts-noto, font-noto-cjk -> fonts-noto-cjk
+RUN apt update; \
+    apt install -y --no-install-recommends \
+    libreoffice \
+    openjdk-21-jre-headless \
+    fonts-dejavu \
+    fonts-noto \
+    fonts-noto-cjk \
+    ; \
+    rm -rf /var/lib/apt/lists/*;
+
 RUN curl -sSLf \
     -o /usr/local/bin/install-php-extensions \
     https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions && \
