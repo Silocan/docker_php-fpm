@@ -99,6 +99,9 @@ EXPOSE 9000
 # CVE-2026-109618 / CVE-2026-109619 : lu au démarrage via conf.d, avant le parsing des requêtes
 RUN printf 'session.upload_progress.enabled = Off\n' > "${PHP_INI_DIR}/conf.d/99-disable-upload-progress.ini"
 
+# Sécurité : ne pas exposer la version de PHP (en-tête X-Powered-By)
+RUN printf 'expose_php = Off\n' > "${PHP_INI_DIR}/conf.d/98-security.ini"
+
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["php-fpm", "-F"]
 
